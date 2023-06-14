@@ -59,7 +59,7 @@ export const DeliveryDefault = () => {
     const [orderNotInSchedule, setOrderNotInSchedule] = useState([])
     const [lastItemSelectedDate, setLastItemSelectedDate] = useState([])
     const fetch = useAuthenticatedFetch();
-    const domain = 'https://msh-api.vmodev.link'
+    const domain = 'https://msh.api.vmodev.link'
     const storeName = 'vmo-staging'
 
 
