@@ -1,0 +1,11 @@
+##################DB_CONFIG##################
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+
+##################SHOPIFY##################
+API_VER=2023-04
+HOST_NAME=vmo-store-sample.myshopify.com
+ACCESS_TOKEN=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
