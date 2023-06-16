@@ -36,6 +36,10 @@ export const styles = {
         cursor: 'pointer',
     },
     futureDateContainerDetail: {
+        color: 'orange',
+        cursor: 'pointer'
+    },
+    futureDateContainerDetailV2: {
         width: 240,
         color: 'orange',
         cursor: 'pointer'
@@ -66,9 +70,10 @@ export const styles = {
         flexDirection: 'column',
         justifyContent: 'flex-start',
         backgroundColor: 'white',
-        overflow: 'auto'
+        overflow: 'auto',
+        minWidth: 1200,
         // height: '100%',
-        // width: 1200,
+
     },
     buttonAddRowContainer: {
         backgroundColor: "#FF8C00",
@@ -168,10 +173,31 @@ export const styles = {
     },
     loadingContainerIndicator: {
         display: 'flex',
-        height: 200, width: 1200,
+        height: 200,
+        minWidth: 1200,
         justifyItems: 'center',
         justifyContent: 'center',
         paddingTop: 40
+    },
+    dotStyleGrey: {
+        color: 'grey'
+    },
+    titleStyleV1: {
+        marginTop: 20
+    },
+    titleStyleV2: {
+        marginTop: 12
+    },
+    noteStyle: {
+        marginTop: 12,
+        fontSize: 20,
+        marginBottom: 8
+    },
+    itemNotInSchedule: {
+        alignItems: 'baseline',
+        flexWrap: 'wrap',
+        display: 'flex',
+        flexDirection: 'column'
     }
 
 }

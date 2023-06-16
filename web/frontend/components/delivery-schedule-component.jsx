@@ -70,15 +70,15 @@ export const DeliveryDefault = () => {
 
     const tabs = [
         {
+            id: 'accepts-marketing-1',
+            content: 'Delivery Calendar',
+            panelID: 'accepts-marketing-content-1',
+        },
+        {
             id: 'all-customers-1',
             content: 'Schedule Default',
             accessibilityLabel: 'All customers',
             panelID: 'all-customers-content-1',
-        },
-        {
-            id: 'accepts-marketing-1',
-            content: 'Special Day',
-            panelID: 'accepts-marketing-content-1',
         },
     ];
 
@@ -170,12 +170,12 @@ export const DeliveryDefault = () => {
         return (
             <div style={styles.loadingContainerIndicator}>
                 <div className="sk-chase">
-                    <div className="sk-chase-dot" style={{ color: 'grey' }}>●</div>
-                    <div className="sk-chase-dot" style={{ color: 'grey' }}>●</div>
-                    <div className="sk-chase-dot" style={{ color: 'grey' }}>●</div>
-                    <div className="sk-chase-dot" style={{ color: 'grey' }}>●</div>
-                    <div className="sk-chase-dot" style={{ color: 'grey' }}>●</div>
-                    <div className="sk-chase-dot" style={{ color: 'grey' }}>●</div>
+                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
+                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
+                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
+                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
+                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
+                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
                 </div>
             </div>
 
@@ -660,26 +660,6 @@ export const DeliveryDefault = () => {
                                     :
                                     <div style={styles.mapRowItemContainer}>
                                         {!selected ? <>
-                                            <b style={styles.textCategoriesStyle}>Delivery Schedule Defaults</b>
-                                            <div>
-                                                {defaultScheduleData.map((dayData, dayIndex) => (
-                                                    <Day
-                                                        isLoading={isLoading}
-                                                        dayData={dayData}
-                                                        dayIndex={dayIndex}
-                                                        key={dayIndex}
-                                                        setData={setDefaultScheduleData}
-                                                        allData={defaultScheduleData}
-                                                        handleAddRow={handleAddRow}
-                                                        handleRemoveRow={handleRemoveRow}
-                                                        handleSaveDay={handleSaveDay}
-                                                        saveDay={saveDay}
-
-                                                    />)
-                                                )}
-
-                                            </div>
-                                        </> : <>
                                             <b id="selected_schedule" style={styles.textCategoriesStyle}>Delivery Schedule for {selectedDate ? `${handleDayInWeek(selectedDate)} the ${format(new Date(selectedDate), 'dd MMM yyyy')}` : 'Selected Day'}</b>
                                             <b style={{ marginTop: 20 }}>
                                                 Jump to date
@@ -702,14 +682,14 @@ export const DeliveryDefault = () => {
                                                     customInput={<ExampleCustomInput />}
                                                 />
                                             </div>
-                                            <b style={{ marginTop: 20 }}>
+                                            <b style={styles.titleStyleV1}>
                                                 Schedule Data
                                             </b>
-                                            <b style={{ marginTop: 12 }}>
+                                            <b style={styles.titleStyleV2}>
                                                 This day is custom set and will not be overwritten by changes to the default table.
                                             </b>
-                                            {selectedDateData[0].data.length == 1 && (
-                                                <b style={{ marginTop: 12 }}>
+                                            {selectedDateData[0] && selectedDateData[0].data.length == 1 && (
+                                                <b style={styles.titleStyleV2}>
                                                     You can not delete the last time slot in this date.
                                                 </b>)
                                             }
@@ -741,11 +721,10 @@ export const DeliveryDefault = () => {
                                                     }
                                                 </div>}
 
-
-                                            <b style={{ marginTop: 12, fontSize: 20, marginBottom: 8 }}>
-                                                These not closed/canceled orders have no assigned delivery slot
+                                            <b style={styles.noteStyle}>
+                                                Pending delivery orders with no assigned delivery slots.
                                             </b>
-                                            <div style={{ alignItems: 'baseline', width: 1200, flexWrap: 'wrap', display: 'flex', }}>
+                                            <div style={styles.itemNotInSchedule}>
                                                 {orderNotInSchedule.map((item, index) => {
                                                     return (
                                                         <b style={styles.futureDateContainerDetail} key={index}
@@ -756,18 +735,38 @@ export const DeliveryDefault = () => {
                                             </div>
 
                                             {futureCustom && futureCustom.length !== 0 && (
-                                                <b style={{ marginTop: 12, fontSize: 20, marginBottom: 8 }}>
+                                                <b style={styles.noteStyle}>
                                                     These future dates have custom settings
                                                 </b>
                                             )}
                                             {futureCustom.map((item, index) => {
-                                                return (<b style={styles.futureDateContainerDetail} key={index} target="selected_schedule" onClick={() => {
+                                                return (<b style={styles.futureDateContainerDetailV2} key={index} target="selected_schedule" onClick={() => {
                                                     setSelectedDate(item)
                                                     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
                                                 }}>
                                                     {handleDayInWeek(item)}, {format(new Date(item), 'yyyy/MM/dd')}
                                                 </b>)
                                             })}
+                                        </> : <>
+                                            <b style={styles.textCategoriesStyle}>Delivery Schedule Defaults</b>
+                                            <div>
+                                                {defaultScheduleData.map((dayData, dayIndex) => (
+                                                    <Day
+                                                        isLoading={isLoading}
+                                                        dayData={dayData}
+                                                        dayIndex={dayIndex}
+                                                        key={dayIndex}
+                                                        setData={setDefaultScheduleData}
+                                                        allData={defaultScheduleData}
+                                                        handleAddRow={handleAddRow}
+                                                        handleRemoveRow={handleRemoveRow}
+                                                        handleSaveDay={handleSaveDay}
+                                                        saveDay={saveDay}
+                                                        isPlacedOrders={false}
+                                                    />)
+                                                )}
+
+                                            </div>
                                         </>}
                                     </div>
                                 }
@@ -844,24 +843,24 @@ const Day = ({ dayData, dayIndex, setData, allData, isDate = true, isSave = true
             </div>
             {dayData.data.length != 0 && (
                 <div style={{ marginLeft: 4, display: 'flex', flexDirection: 'row', }}>
-                    <b style={isPlacedOrders ? { width: '18%' } : { width: '21%' }}>
+                    <b style={isPlacedOrders ? { width: '18%' } : { width: '18.5%' }}>
                         Comment
                     </b>
-                    <b style={isPlacedOrders ? { width: '13%' } : { width: '15%' }}>
+                    <b style={isPlacedOrders ? { width: '13%' } : { width: '14%' }}>
                         Area
                     </b>
-                    <b style={isPlacedOrders ? { width: '13%' } : { width: '15%' }}>
+                    <b style={isPlacedOrders ? { width: '13%' } : { width: '14%' }}>
                         District
                     </b>
-                    <b style={isPlacedOrders ? { width: '13%' } : { width: '15%' }}>
+                    <b style={isPlacedOrders ? { width: '13.5%' } : { width: '14%' }}>
                         Customer Type
                     </b>
 
-                    <b style={isPlacedOrders ? { width: '14%' } : { width: '19%' }}>
+                    <b style={isPlacedOrders ? { width: '13%' } : { width: '17.5%' }}>
                         Maximum Orders
                     </b>
                     {isPlacedOrders && (
-                        <b style={{ width: '16%' }}>
+                        <b style={{ width: '17%' }}>
                             Placed Orders
                         </b>
                     )}
