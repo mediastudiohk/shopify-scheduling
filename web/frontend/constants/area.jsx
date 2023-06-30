@@ -1,8 +1,8 @@
-export const areaOption = [
+export const AREA_OPTIONS = [
     'Hong Kong Island', 'Hong Kong Island - Piers', 'Kowloon', 'New Territories 1', 'New Territories 2', 'Islands'
 ]
 
-export const districtOption = [
+export const DISTRICT_OPTIONS = [
     {
         area: 'Hong Kong Island',
         district: ['Central & Western', 'Wan Chai', 'Eastern', 'Southern']
@@ -30,6 +30,6 @@ export const districtOption = [
     },
 ]
 
-export const customerTypeOption = [
+export const CUSTOMER_TYPE_OPTIONS = [
     "Retail", "Wholesale",
 ]
