@@ -1,25 +1,25 @@
 import {
     Layout,
-    TextField,
-    Select,
     Icon,
     Tabs,
     Card,
 } from "@shopify/polaris";
 import { TitleBar, useAuthenticatedFetch, Toast } from "@shopify/app-bridge-react";
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
-    DeleteMajor, CalendarMajor
+    CalendarMajor
 } from '@shopify/polaris-icons';
 import DatePicker from "react-datepicker";
 import { styles } from "../styles";
 import { add, format } from "date-fns";
-import { areaOption, customerTypeOption, districtOption } from "../constants/area";
-import { dayOfWeeks } from "../constants/dayOfWeek";
+import { DAY_OF_WEEKS } from "../constants/dayOfWeek";
 import "../css/dot-chasing.css";
 import "../css/tab-effect.css";
 import "../css/tab-sample.css";
 import "react-datepicker/dist/react-datepicker.css";
+import { Day } from "./day-components/dayComponents";
+import { comparePriority } from "../utils/comparePriority";
+import { LoadingDot } from "./loading-dot";
 
 
 function useWindowSize() {
@@ -95,20 +95,6 @@ export const DeliveryDefault = () => {
         else { console.log('id is not defined') }
     }
 
-    const comparePriority = (a, b) => {
-        if (a.priority && b.priority) {
-            return a.priority - b.priority;
-        }
-        return null
-    }
-
-    const comparePrioritySelectedDate = (a, b) => {
-        if (a.priority && b.priority) {
-            return a.priority - b.priority;
-        }
-        return null
-    }
-
     const handleDayInWeek = (date) => {
         switch (new Date(date).getDay()) {
             case 0:
@@ -160,27 +146,8 @@ export const DeliveryDefault = () => {
                     />
                 </div>
             </div>
-
-
-
         </div>
     ));
-
-    const LoadingDot = () => {
-        return (
-            <div style={styles.loadingContainerIndicator}>
-                <div className="sk-chase">
-                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
-                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
-                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
-                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
-                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
-                    <div className="sk-chase-dot" style={styles.dotStyleGrey}>●</div>
-                </div>
-            </div>
-
-        )
-    }
 
     const handleGetFutureDataDate = async () => {
         try {
@@ -203,21 +170,17 @@ export const DeliveryDefault = () => {
             "area": "",
             "district": ""
         }
-        // Call API Create
-        // handleCreateRow(newRow)
         let newAllData = [...allData]
         newAllData[dayIndex].data.push(newRow)
         setDefaultScheduleData(newAllData)
 
     }
 
-
     const handleRemoveRow = (rowIndex, dayIndex, id, allData) => {
         let newAllData = [...allData]
         newAllData[dayIndex].data.splice(rowIndex, 1)
         setDefaultScheduleData(newAllData)
         if (id) setIdDelete([...idDelete, id])
-        // handleDeleteRow(index, day, id)
     };
 
     const handleAddRowSpecialDate = (dayIndex, date, allData, isPlacedOrders, item) => {
@@ -233,11 +196,8 @@ export const DeliveryDefault = () => {
             "priority": "",
             "schedule_orders": a
         }
-        // Call API Create
-        // handleCreateRow(newRow)
         let newAllData = [...selectedDateData]
         newAllData[dayIndex].data.push(newRow)
-        // newAllData[dayIndex].data.push(newRow)
         setSelectedDateData(newAllData)
     }
 
@@ -258,13 +218,7 @@ export const DeliveryDefault = () => {
             setLastItemSelectedDate(newLastItem)
             handleDeleteRow()
         }
-
-        // check item length trước khi có 1 schedule (đã có orders thì không xóa được)
-        // if id có: sửa id cuối với maximum_order = 0 
-        // if id null : tạo 1 bản ghi có custom schedule-order mới với maximum_order = 0
-
     };
-
 
     const saveDay = (item, allData, day, row) => {
         let newRowItem = allData[day].data[row]
@@ -273,13 +227,9 @@ export const DeliveryDefault = () => {
         newRowItem['district'] = item.district
         newRowItem['customer_type'] = item.customer_type
         newRowItem['maximum_order'] = item.maximum_order
-
         let newDayItem = [...allData[day].data]
         newDayItem.splice(row, 1, newRowItem)
-
         let newAlldata = [...allData]
-        // newAlldata.splice(day, 1, newAlldata)
-
         setDefaultScheduleData(newAlldata)
     }
 
@@ -290,13 +240,9 @@ export const DeliveryDefault = () => {
         newRowItem['district'] = item.district
         newRowItem['customer_type'] = item.customer_type
         newRowItem['maximum_order'] = item.maximum_order
-
         let newDayItem = [...allData[day].data]
         newDayItem.splice(row, 1, newRowItem)
-
         let newAlldata = [...allData]
-        // newAlldata.splice(day, 1, newAlldata)
-
         setSelectedDateData(newAlldata)
     }
 
@@ -416,7 +362,7 @@ export const DeliveryDefault = () => {
 
     const fetchData = async () => {
         setIsLoading(true)
-        let week = dayOfWeeks
+        let week = DAY_OF_WEEKS
         try {
             const response = await fetch(`${domain}/api/schedule-default/`);
             const data = await response.json();
@@ -466,11 +412,10 @@ export const DeliveryDefault = () => {
         }
     }
 
-    // get first time
     const fetchDataDefaultToday = async (newDate) => {
         setIsLoadingSelectDate(true)
         let defaultSchedule = []
-        let week = dayOfWeeks
+        let week = DAY_OF_WEEKS
         try {
             const response = await fetch(`${domain}/api/schedule-default/`);
             const data = await response.json();
@@ -482,7 +427,6 @@ export const DeliveryDefault = () => {
                     return { date: item, data: [] }
                 })
                 defaultSchedule = weekSchedule
-                // setDefaultScheduleDataNonChange(weekSchedule)
             } else {
                 let weekSchedule = week.map((item) => {
                     return { date: item, data: [] }
@@ -504,7 +448,6 @@ export const DeliveryDefault = () => {
                     }
                 }
                 if (currentTemplate.length != 0) {
-                    // setDefaultScheduleDataNonChange(currentTemplate)
                     defaultSchedule = currentTemplate
                 }
             }
@@ -526,13 +469,11 @@ export const DeliveryDefault = () => {
             } else {
                 needToFill = false
             }
-            // checkIfDayIsCustomed(selectedDay, data.response)
             if (needToFill) {
                 setSelectedDateData([{ date: dayInWeekSelectedDay, data: [] }])
                 if (defaultSchedule) defaultData = defaultSchedule.find(item => item.date == today).data
                 setSelectedDateData([{ date: dayInWeekSelectedDay, data: defaultData }])
                 setIsLoadingSelectDate(false)
-                // error here
             }
             else if (data.response.isCustomed
                 && Object.keys(data.response.isCustomed).length === 0
@@ -561,7 +502,7 @@ export const DeliveryDefault = () => {
                     y = [{ date: dayInWeekSelectedDay, data: data?.response?.nonCustomed[selectedDay]?.sort(comparePriority) }]
                 }
                 let combineData = [...y[0].data, ...x[0].data]
-                let q = [{ date: dayInWeekSelectedDay, data: combineData.sort(comparePrioritySelectedDate) }]
+                let q = [{ date: dayInWeekSelectedDay, data: combineData.sort(comparePriority) }]
                 setSelectedDateData(q)
                 setIsLoadingSelectDate(false)
             }
@@ -582,7 +523,6 @@ export const DeliveryDefault = () => {
                 }
             })
             setToastProps({ content: "Delete successfully!" });
-            // fetchData()
         } catch (error) {
             console.log('ERROR', error);
             setToastProps({
@@ -603,8 +543,6 @@ export const DeliveryDefault = () => {
                 }
             })
             setToastProps({ content: "Delete successfully!" });
-            // fetchData()
-
         } catch (error) {
             console.log('ERROR', error);
             setToastProps({
@@ -617,28 +555,14 @@ export const DeliveryDefault = () => {
 
     const handleGetData = (data) => {
         setDefaultScheduleData(data)
-        // setDefaultScheduleDataNonChange(data)
     }
 
     useEffect(() => {
         fetchData();
-    }, [])
-
-    useEffect(() => {
         handleGetFutureDataDate();
-    }, [])
-
-    useEffect(() => {
         handleGetOrderWithOutSchedule()
-    }, [])
-
-    useEffect(() => {
         setSelectedDate(format(new Date(selectedDate), 'yyyy-MM-dd'))
     }, [])
-
-    // useEffect(() => {
-    //     handleGetSelectedDate(selectedDate);
-    // }, [selectedDate])
 
     useEffect(() => {
         fetchDataDefaultToday(selectedDate);
@@ -646,11 +570,11 @@ export const DeliveryDefault = () => {
 
     return (
         <div style={styles.container}>
-            <div style={size.width < 1265 ? { display: 'flex', padding: 20 } : { padding: 20 }}>
+            <div style={size.width < 1265 ? styles.tabContainerWithFlex : styles.tabContainerNoFlex}>
                 <TitleBar title="Delivery Schedule Management" primaryAction={null} />
                 <Layout>
                     {toastMarkup}
-                    <div style={{}}>
+                    <div>
                         <Card>
                             <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange}>
                                 {isLoading ?
@@ -715,9 +639,7 @@ export const DeliveryDefault = () => {
                                                                 />
                                                             )
                                                         })
-                                                    ) :
-                                                        <>
-                                                        </>
+                                                    ) : <></>
                                                     }
                                                 </div>}
 
@@ -778,434 +700,3 @@ export const DeliveryDefault = () => {
         </div>
     );
 }
-
-const Day = ({ dayData, dayIndex, setData, allData, isDate = true, isSave = true, index, handleAddRow, handleRemoveRow, handleSaveDay, isPlacedOrders = false, isLoading, saveDay }) => {
-    const [isSavePress, setIsSavePressed] = useState(false)
-    const emptyToastProps = { content: null };
-    const [toastProps, setToastProps] = useState(emptyToastProps);
-    const toastMarkup = toastProps.content && !isLoading && (
-        <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
-    );
-    const handleDayInWeek = (date) => {
-        switch (date) {
-            case "Sun":
-                return "Sunday";
-            case "Mon":
-                return "Monday";
-            case "Tue":
-                return "Tuesday";
-            case "Wed":
-                return "Wednesday";
-            case "Thu":
-                return "Thursday";
-            case "Fri":
-                return "Friday";
-            case "Sat":
-                return "Saturday";
-        }
-    }
-
-
-    const handleCheckValidate = () => {
-        let nullItem = dayData.data.find((item) => item.area === '' || item.comment === '' || item.maximum_order === '')
-        return nullItem ? false : true
-    }
-
-    const handleSaveDayValidate = () => {
-        if (handleCheckValidate()) {
-            handleSaveDay(day, dayData.date, dayData.data)
-            setIsSavePressed(true)
-            setTimeout(() => {
-                setIsSavePressed(false)
-            }, 4000);
-        } else {
-            // setToastProps({
-            //     content: "Please fill all required fields!",
-            //     error: true,
-            // });
-            setIsSavePressed(true)
-            setTimeout(() => {
-                setIsSavePressed(false)
-            }, 4000);
-        }
-
-    }
-    let day = dayIndex
-    return (
-        <div key={day}>
-            {toastMarkup}
-            <div style={styles.textDateStyle}>
-                {isDate && (
-                    <div>
-                        {handleDayInWeek(dayData.date)}
-                    </div>
-                )}
-            </div>
-            {dayData.data.length != 0 && (
-                <div style={{ marginLeft: 4, display: 'flex', flexDirection: 'row', }}>
-                    <b style={isPlacedOrders ? { width: '18%' } : { width: '18.5%' }}>
-                        Comment
-                    </b>
-                    <b style={isPlacedOrders ? { width: '13%' } : { width: '14%' }}>
-                        Area
-                    </b>
-                    <b style={isPlacedOrders ? { width: '13%' } : { width: '14%' }}>
-                        District
-                    </b>
-                    <b style={isPlacedOrders ? { width: '13.5%' } : { width: '14%' }}>
-                        Customer Type
-                    </b>
-
-                    <b style={isPlacedOrders ? { width: '13%' } : { width: '17.5%' }}>
-                        Maximum Orders
-                    </b>
-                    {isPlacedOrders && (
-                        <b style={{ width: '17%' }}>
-                            Placed Orders
-                        </b>
-                    )}
-                    <b>
-                        Move
-                    </b>
-                </div>
-            )}
-            {dayData.data.map((rowData, rowIndex) => {
-                return <Row
-                    isLoading={isLoading}
-                    rowData={rowData}
-                    rowIndex={rowIndex}
-                    dayIndex={dayIndex}
-                    key={rowIndex}
-                    setData={setData}
-                    allData={allData}
-                    isPlacedOrders={isPlacedOrders}
-                    handleDeleteRow={handleRemoveRow}
-                    day={dayData.date}
-                    saveDay={saveDay}
-                    dayData={dayData}
-                    isSavePress={isSavePress}
-                />
-            })}
-
-            <div >
-                {dayData.data.length != 0 && (<div style={{ paddingTop: 12 }}>
-                    Enter a 'maximum orders' value of 0 to hide a slot from the customers.
-                </div>)
-                }
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <div style={styles.buttonAddRowContainer}
-                        onClick={() => {
-                            if (handleCheckValidate()) {
-                                !isLoading && handleAddRow(dayIndex, dayData.date, allData, isPlacedOrders, dayData)
-                            } else { null }
-                        }}>
-                        <b>
-                            Add Row
-                        </b>
-                    </div>
-                    {(
-                        <div style={styles.buttonSaveContainer}
-                            onClick={() => {
-                                handleSaveDayValidate()
-                            }}>
-                            <b>
-                                Save
-                            </b>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-        </div>
-    )
-}
-
-const Row = ({ rowData, rowIndex, dayIndex, setData, allData, handleDeleteRow, isPlacedOrders, day, isLoading, saveDay, dayData, isSavePress }) => {
-    const [comment, setComment] = useState('');
-    const [area, setArea] = useState('');
-    const [district, setDistrict] = useState('');
-    const [customerType, setCustomerType] = useState('');
-    const [maximumOrders, setMaximumOrders] = useState('')
-    const [placedOrders, setPlacedOrders] = useState([])
-    const [districtCustom, setDistrictCustom] = useState([])
-    const storeName = 'vmo-staging'
-
-    const gotoOrder = (id) => {
-        if (id) {
-            let orderId = id.split('gid://shopify/Order/').at(1)
-            let url = `https://admin.shopify.com/store/${storeName}/orders/`
-            window.open(url + orderId, '_blank');
-        }
-        else { console.log('id is not defined') }
-    }
-
-    useEffect(() => {
-        rowData && (
-            setComment(rowData.comment),
-            setArea(rowData.area),
-            setDistrict(rowData.district),
-            setCustomerType(rowData.customer_type),
-            setMaximumOrders(rowData.maximum_order),
-            rowData?.schedule_orders && setPlacedOrders(rowData?.schedule_orders)
-            // getDistrictOption(rowItem.area)
-        )
-    }, [allData])
-
-    const getDistrictOption = (area) => {
-        let districtCustomOption = districtOption.find((item) => item.area === area)
-        setDistrictCustom([...districtCustomOption.district,])
-    }
-
-    useEffect(async () => {
-        (async () => {
-            let districtCustomOption = districtOption.find((item) => item.area === rowData.area)
-            setDistrictCustom(districtCustomOption?.district)
-        })();
-    }, [])
-
-    const handleMoveUp = ({ dayIndex, rowIndex, allData }) => {
-        //from
-        let tempNewData = [...allData[dayIndex].data]
-        ///oject in day item
-        let tempItemFrom = allData[dayIndex].data[rowIndex]
-        //move up
-        if (rowIndex >= 1) {
-            tempNewData.splice(rowIndex, 1, allData[dayIndex].data[rowIndex - 1])
-            tempNewData.splice(rowIndex - 1, 1, tempItemFrom)
-        }
-        //day in week item render
-        let itemDate = {
-            data: tempNewData,
-            date: allData[dayIndex].date
-        }
-        let newAlldata = [...allData]
-        newAlldata.splice(dayIndex, 1, itemDate)
-        setData(newAlldata)
-    }
-
-    const handleMoveDown = ({ dayIndex, rowIndex, allData }) => {
-        //from
-        let tempNewData = [...allData[dayIndex].data]
-        ///oject in day item
-        let tempItemFrom = allData[dayIndex].data[rowIndex]
-        //move up
-        if (rowIndex < allData[dayIndex].data.length - 1) {
-            tempNewData.splice(rowIndex, 1, allData[dayIndex].data[rowIndex + 1])
-            tempNewData.splice(rowIndex + 1, 1, tempItemFrom)
-        }
-        //day in week item render
-        let itemDate = {
-            data: tempNewData,
-            date: allData[dayIndex].date
-        }
-        let newAlldata = [...allData]
-        newAlldata.splice(dayIndex, 1, itemDate)
-        setData(newAlldata)
-    }
-
-
-    return (
-        <div key={rowData?.id_schedule_default} style={styles.rowContainer}>
-            <div style={styles.commentContainer}>
-                {/* <div style={comment ? styles.commentContainer : { backgroundColor: 'red', width: 200, display: 'flex', padding: 2, border: 20, borderColor: 'green' }}> */}
-                <TextField
-                    error={isSavePress ? comment ? false : "This field is required" : false}
-                    disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
-                    label="Comment"
-                    placeholder="Enter Comment"
-                    value={comment}
-                    maxLength="25"
-                    onChange={(value) => {
-                        setComment(value),
-                            saveDay(
-                                {
-                                    dayIndex,
-                                    //
-                                    id_schedule_default: rowData.id_schedule_default || null,
-                                    schedule_date: rowData.schedule_date,
-                                    comment: value,
-                                    customer_type: rowData.customer_type,
-                                    maximum_order: rowData.maximum_order,
-                                    is_customed: rowData.is_customed,
-                                    area,
-                                    district,
-                                    priority: rowData.priority,
-                                }, allData, dayIndex, rowIndex
-                            )
-                    }}
-                    autoComplete="off"
-                    labelHidden
-                />
-            </div>
-            <div style={styles.selectContainer}>
-                <Select
-                    error={isSavePress ? area ? false : "This field is required" : false}
-                    disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
-                    label="Area"
-                    placeholder="Select Area"
-                    options={areaOption}
-                    onChange={(value) => {
-                        getDistrictOption(value)
-                        setArea(value),
-                            saveDay(
-                                {
-                                    dayIndex,
-                                    //
-                                    id_schedule_default: rowData.id_schedule_default,
-                                    schedule_date: rowData.schedule_date,
-                                    comment,
-                                    customer_type: rowData.customer_type,
-                                    maximum_order: rowData.maximum_order,
-                                    is_customed: rowData.is_customed,
-                                    area: value,
-                                    district,
-                                    priority: rowData.priority,
-                                }, allData, dayIndex, rowIndex
-                            )
-                    }}
-                    value={area}
-                    labelHidden
-                />
-            </div>
-            <div style={styles.selectContainer}>
-                <Select
-                    disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
-                    label="District"
-                    placeholder="Select District"
-                    options={districtCustom}
-                    onChange={(value) => {
-                        setDistrict(value),
-                            saveDay(
-                                {
-                                    dayIndex,
-                                    //
-                                    id_schedule_default: rowData.id_schedule_default,
-                                    schedule_date: rowData.schedule_date,
-                                    comment,
-                                    customer_type: rowData.customer_type,
-                                    maximum_order: rowData.maximum_order,
-                                    is_customed: rowData.is_customed,
-                                    area,
-                                    district: value,
-                                    priority: rowData.priority,
-                                }, allData, dayIndex, rowIndex
-                            )
-                    }}
-                    value={district}
-                    labelHidden
-                />
-            </div>
-            <div style={styles.selectContainer}>
-                <Select
-                    disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
-                    label="Customer Type"
-                    placeholder="Select Customer Type"
-                    options={customerTypeOption}
-                    onChange={(value) => {
-                        setCustomerType(value),
-                            saveDay(
-                                {
-                                    dayIndex,
-                                    //
-                                    id_schedule_default: rowData.id_schedule_default,
-                                    schedule_date: rowData.schedule_date,
-                                    comment,
-                                    customer_type: value,
-                                    maximum_order: rowData.maximum_order,
-                                    is_customed: rowData.is_customed,
-                                    area,
-                                    district,
-                                    priority: rowData.priority,
-                                }, allData, dayIndex, rowIndex
-                            )
-                    }}
-                    value={customerType}
-                    labelHidden
-                />
-            </div>
-            <div style={styles.selectContainer}>
-                <TextField
-                    error={isSavePress ? maximumOrders || maximumOrders !== '' ? false : "This field is required" : false}
-                    min={0}
-                    max={999}
-                    type="number"
-                    label="Maximum Orders"
-                    value={maximumOrders}
-                    onChange={(value) => {
-                        let formatValue = (value.replace(/[^0-9]/g, '').replace(/(\...*?)\..*/g, '$1').replace(/^0[^.]/, '0'))
-                        formatValue < 0 || formatValue > 999 || (value < rowData.schedule_orders?.length && value != '') ?
-                            null : (setMaximumOrders(Number(formatValue)),
-                                saveDay(
-                                    {
-                                        dayIndex,
-                                        //
-                                        id_schedule_default: rowData.id_schedule_default,
-                                        schedule_date: rowData.schedule_date,
-                                        comment,
-                                        customer_type: rowData.customer_type,
-                                        maximum_order: formatValue,
-                                        is_customed: rowData.is_customed,
-                                        area,
-                                        district,
-                                        priority: rowData.priority,
-                                    }, allData, dayIndex, rowIndex
-                                ))
-                    }}
-                    autoComplete="off"
-                    labelHidden
-                />
-            </div>
-            {
-                isPlacedOrders && (<div style={styles.selectContainerPlaceOrder}>
-                    <b style={styles.textPlaceOrder}>
-                        {placedOrders.length}
-                    </b>
-                    <div style={{ display: "flex", flexDirection: 'column', backgroundColor: 'white' }}>
-                        {placedOrders.length != 0 && placedOrders.map((item, index) => {
-                            return (
-                                <b
-                                    style={styles.orderContainerDetail} key={index}>
-                                    <u onClick={() => {
-                                        gotoOrder(item.order_id)
-                                    }}>{item.order_name} </u>
-                                </b>
-                            )
-                        })}
-
-                    </div>
-                </div>)
-            }
-            <div style={styles.iconDeleteContainer}>
-                <div
-                    onClick={() => {
-                        if (isPlacedOrders) {
-                            (!rowData?.schedule_orders || rowData?.schedule_orders?.length === 0) && !isLoading && handleDeleteRow(rowIndex, dayIndex, rowData.id_schedule, allData)
-                        } else
-                            !isLoading && handleDeleteRow(rowIndex, dayIndex, rowData.id_schedule_default, allData)
-                    }}>
-                    <Icon
-                        source={DeleteMajor}
-                        color={isPlacedOrders ? !rowData?.schedule_orders || rowData?.schedule_orders?.length === 0 ? "black" : "base" : "black"}
-                    />
-                </div>
-            </div>
-            <div>
-                <div style={styles.buttonMoveContainer}>
-                    <div style={styles.buttonMoveRowContainer}
-                        onClick={() => handleMoveUp({ dayIndex, rowIndex, rowData, allData })}>
-                        <b>
-                            Up
-                        </b>
-                    </div>
-                    <div style={styles.buttonMoveRowContainer}
-                        onClick={() => handleMoveDown({ dayIndex, rowIndex, rowData, allData })}>
-                        <b>
-                            Down
-                        </b>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-

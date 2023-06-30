@@ -1,11 +1,15 @@
 export const styles = {
     container: {
         backgroundColor: 'white',
-        // marginLeft: '5%',
-        // marginRight: '5%',
-        // paddingLeft: '1%', 
-        // paddingRight: '1%' 
     },
+    tabContainerWithFlex: {
+        display: 'flex',
+        padding: 20
+    },
+    tabContainerNoFlex: {
+        padding: 20
+    },
+
     rowContainer: {
         display: 'flex',
         margin: 4,
