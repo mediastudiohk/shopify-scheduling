@@ -226,7 +226,7 @@ export const DeliveryDefault = () => {
         newRowItem['area'] = item.area
         newRowItem['district'] = item.district
         newRowItem['customer_type'] = item.customer_type
-        newRowItem['maximum_order'] = item.maximum_order
+        newRowItem['maximum_order'] = Number(item.maximum_order)
         let newDayItem = [...allData[day].data]
         newDayItem.splice(row, 1, newRowItem)
         let newAlldata = [...allData]
@@ -239,7 +239,7 @@ export const DeliveryDefault = () => {
         newRowItem['area'] = item.area
         newRowItem['district'] = item.district
         newRowItem['customer_type'] = item.customer_type
-        newRowItem['maximum_order'] = item.maximum_order
+        newRowItem['maximum_order'] = Number(item.maximum_order)
         let newDayItem = [...allData[day].data]
         newDayItem.splice(row, 1, newRowItem)
         let newAlldata = [...allData]
@@ -282,7 +282,7 @@ export const DeliveryDefault = () => {
 
     const handleCheckValidateMaximumOrders = (items) => {
         let nullItem = items.find((item) =>
-            item.maximum_order < item.schedule_orders.length
+            Number(item.maximum_order) < item.schedule_orders.length
 
         )
 
