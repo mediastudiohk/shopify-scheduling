@@ -4,7 +4,7 @@ import {
   useAuthenticatedFetch,
   Toast,
 } from "@shopify/app-bridge-react";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, forwardRef } from "react";
 import { CalendarMajor } from "@shopify/polaris-icons";
 import DatePicker from "react-datepicker";
 import { styles } from "../styles";
@@ -15,15 +15,20 @@ import "../css/tab-effect.css";
 import "../css/tab-sample.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { Day } from "./day-components/dayComponents";
+import CutOffComponents from "./cut-off-components/cutOffComponents";
+
 import { comparePriority } from "../utils/comparePriority";
 import { LoadingDot } from "./loading-dot";
+import { DOMAIN, STORE_NAME, TAB_ENUMS } from "../constants/constants";
+import { handleDayInWeek, handleDayInWeekV2 } from "../utils/date-utils";
 
 function useWindowSize() {
-  const [windowSize, setWindowSize] = React.useState({
+  const [windowSize, setWindowSize] = useState({
     width: 0,
     height: 0,
   });
-  React.useEffect(() => {
+
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const handleResize = () => {
         setWindowSize({
@@ -56,27 +61,11 @@ export const DeliveryDefault = () => {
   const [orderNotInSchedule, setOrderNotInSchedule] = useState([]);
   const [lastItemSelectedDate, setLastItemSelectedDate] = useState([]);
   const fetch = useAuthenticatedFetch();
-  const domain = "https://msh.api.vmodev.link";
-  const storeName = "vmo-staging";
 
   const handleTabChange = useCallback(
     (selectedTabIndex) => setSelected(selectedTabIndex),
     []
   );
-
-  const tabs = [
-    {
-      id: "accepts-marketing-1",
-      content: "Delivery Calendar",
-      panelID: "accepts-marketing-content-1",
-    },
-    {
-      id: "all-customers-1",
-      content: "Schedule Default",
-      accessibilityLabel: "All customers",
-      panelID: "all-customers-content-1",
-    },
-  ];
 
   const toastMarkup = toastProps.content && !isLoading && (
     <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
@@ -85,52 +74,14 @@ export const DeliveryDefault = () => {
   const gotoOrder = (id) => {
     if (id) {
       let orderId = id.split("gid://shopify/Order/").at(1);
-      let url = `https://admin.shopify.com/store/${storeName}/orders/`;
+      let url = `https://admin.shopify.com/store/${STORE_NAME}/orders/`;
       window.open(url + orderId, "_blank");
     } else {
       console.log("id is not defined");
     }
   };
 
-  const handleDayInWeek = (date) => {
-    switch (new Date(date).getDay()) {
-      case 0:
-        return "Sunday";
-      case 1:
-        return "Monday";
-      case 2:
-        return "Tuesday";
-      case 3:
-        return "Wednesday";
-      case 4:
-        return "Thursday";
-      case 5:
-        return "Friday";
-      case 6:
-        return "Saturday";
-    }
-  };
-
-  const handleDayInWeekV2 = (date) => {
-    switch (new Date(date).getDay()) {
-      case 0:
-        return "Sun";
-      case 1:
-        return "Mon";
-      case 2:
-        return "Tue";
-      case 3:
-        return "Wed";
-      case 4:
-        return "Thu";
-      case 5:
-        return "Fri";
-      case 6:
-        return "Sat";
-    }
-  };
-
-  const ExampleCustomInput = React.forwardRef(({ value, onClick }, ref) => (
+  const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
     <div style={styles.buttonCalendar} onClick={onClick}>
       <div>{value}</div>
       <div style={styles.iconCalendarContainer}>
@@ -144,7 +95,7 @@ export const DeliveryDefault = () => {
   const handleGetFutureDataDate = async () => {
     try {
       const response = await fetch(
-        `${domain}/api/schedule/custom-date?fromDate=${format(
+        `${DOMAIN}/api/schedule/custom-date?fromDate=${format(
           new Date(),
           "yyyy-MM-dd"
         )}`
@@ -309,7 +260,7 @@ export const DeliveryDefault = () => {
   const saveAllSelectedDate = async (items) => {
     setLastItemSelectedDate([]);
     try {
-      let response = await fetch(`${domain}/api/schedule/bulk`, {
+      let response = await fetch(`${DOMAIN}/api/schedule/bulk`, {
         method: "POST",
         body: JSON.stringify(items),
         headers: {
@@ -345,7 +296,7 @@ export const DeliveryDefault = () => {
 
   const saveAll = async (items) => {
     try {
-      let response = await fetch(`${domain}/api/schedule-default/bulk`, {
+      let response = await fetch(`${DOMAIN}/api/schedule-default/bulk`, {
         method: "POST",
         body: JSON.stringify(items),
         headers: {
@@ -369,7 +320,7 @@ export const DeliveryDefault = () => {
   const handleGetOrderWithOutSchedule = async () => {
     try {
       const response = await fetch(
-        `${domain}/api/schedule-order/order-without-schedule`
+        `${DOMAIN}/api/schedule-order/order-without-schedule`
       );
       const data = await response.json();
       setOrderNotInSchedule(data.response);
@@ -382,7 +333,7 @@ export const DeliveryDefault = () => {
     setIsLoading(true);
     let week = DAY_OF_WEEKS;
     try {
-      const response = await fetch(`${domain}/api/schedule-default/`);
+      const response = await fetch(`${DOMAIN}/api/schedule-default/`);
       const data = await response.json();
       if (
         data.response &&
@@ -443,7 +394,7 @@ export const DeliveryDefault = () => {
     let defaultSchedule = [];
     let week = DAY_OF_WEEKS;
     try {
-      const response = await fetch(`${domain}/api/schedule-default/`);
+      const response = await fetch(`${DOMAIN}/api/schedule-default/`);
       const data = await response.json();
       if (
         data.response &&
@@ -495,7 +446,7 @@ export const DeliveryDefault = () => {
     let defaultData = [];
     try {
       const response = await fetch(
-        `${domain}/api/schedule?fromDate=${selectedDay}&needOrder=1&toDate=${selectedDay}`
+        `${DOMAIN}/api/schedule?fromDate=${selectedDay}&needOrder=1&toDate=${selectedDay}`
       );
       const data = await response.json();
       let isCustomedData = data.response.isCustomed[selectedDay];
@@ -585,7 +536,7 @@ export const DeliveryDefault = () => {
 
   const handleDeleteRowSelectedDate = async () => {
     try {
-      await fetch(`${domain}/api/schedule/delete`, {
+      await fetch(`${DOMAIN}/api/schedule/delete`, {
         method: "DELETE",
         body: JSON.stringify({ ids: idDelete }),
         headers: {
@@ -605,7 +556,7 @@ export const DeliveryDefault = () => {
   const handleDeleteRow = async () => {
     setIsLoading(true);
     try {
-      await fetch(`${domain}/api/schedule-default/`, {
+      await fetch(`${DOMAIN}/api/schedule-default/`, {
         method: "DELETE",
         body: JSON.stringify({ ids: idDelete }),
         headers: {
@@ -652,14 +603,19 @@ export const DeliveryDefault = () => {
           {toastMarkup}
           <div>
             <Card>
-              <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange}>
+              <Tabs
+                tabs={TAB_ENUMS}
+                selected={selected}
+                onSelect={handleTabChange}
+              >
                 {isLoading ? (
                   <div style={styles.loadingContainer}>
                     <LoadingDot />
                   </div>
                 ) : (
                   <div style={styles.mapRowItemContainer}>
-                    {!selected ? (
+                    {/* Tab 0 */}
+                    {selected == 0 && (
                       <>
                         <b
                           id="selected_schedule"
@@ -796,7 +752,9 @@ export const DeliveryDefault = () => {
                           );
                         })}
                       </>
-                    ) : (
+                    )}
+                    {/* Tab 1 */}
+                    {selected == 1 && (
                       <>
                         <b style={styles.textCategoriesStyle}>
                           Delivery Schedule Defaults
@@ -817,6 +775,15 @@ export const DeliveryDefault = () => {
                               isPlacedOrders={false}
                             />
                           ))}
+                        </div>
+                      </>
+                    )}
+                    {/* Tab 2 */}
+                    {selected == 2 && (
+                      <>
+                        <b style={styles.textCategoriesStyle}>Cutoff</b>
+                        <div style={{ margin: "20px 0" }}>
+                          <CutOffComponents />
                         </div>
                       </>
                     )}
