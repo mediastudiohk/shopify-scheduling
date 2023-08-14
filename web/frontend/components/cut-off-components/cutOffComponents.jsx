@@ -44,14 +44,6 @@ const CutOffComponents = () => {
   };
 
   const handleSave = async () => {
-    let isCorrectHours = false;
-    let isCorrectMinutes = false;
-    if (cutoffTime) {
-      const [hours, minutes] = cutoffTime.split(":");
-      isCorrectHours = parseInt(hours, 10) > 23;
-      isCorrectMinutes = parseInt(minutes, 10) > 59;
-    }
-
     if (Number(dayDifference) === 0 && cutoffTime === "") {
       setIsErrorCutoffTime({
         isError: true,
