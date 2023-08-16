@@ -10,10 +10,12 @@ const IS_ERROR_DEFAULT = {
   isError: false,
   message: "",
 };
+const CUTOFF_TIME_DEFAULT = "00:00";
+const DAY_DIFFERENCE_DEFAULT = "0";
 
 const CutOffComponents = () => {
   const [cutoffTime, setCutoffTime] = useState("");
-  const [dayDifference, setDayDifference] = useState(null);
+  const [dayDifference, setDayDifference] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isErrorCutoffTime, setIsErrorCutoffTime] = useState(IS_ERROR_DEFAULT);
 
@@ -32,10 +34,12 @@ const CutOffComponents = () => {
   const getCutOffByDomain = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(CUTOFF_TIME_URL);
-      const data = await response.json();
-      setCutoffTime(data.response?.cutoff_time);
-      setDayDifference(data.response?.day_difference);
+      setIsErrorCutoffTime(IS_ERROR_DEFAULT);
+      const res = await fetch(CUTOFF_TIME_URL);
+      const data = await res.json();
+      const { response } = data;
+      setCutoffTime(String(response?.cutoff_time));
+      setDayDifference(String(response?.day_difference));
       setIsLoading(false);
     } catch (error) {
       console.log("Error:", error);
@@ -44,45 +48,43 @@ const CutOffComponents = () => {
   };
 
   const handleSave = async () => {
-    if (Number(dayDifference) === 0 && cutoffTime === "") {
-      setIsErrorCutoffTime({
-        isError: true,
-        message: "This field is required!",
-      });
-    } else if (
-      Number(dayDifference) === 0 &&
-      !REGEX_CUTOFF_TIME.test(cutoffTime)
-    ) {
+    if (!dayDifference) setDayDifference(DAY_DIFFERENCE_DEFAULT);
+    if (!cutoffTime) setCutoffTime(CUTOFF_TIME_DEFAULT);
+
+    if (cutoffTime && !REGEX_CUTOFF_TIME.test(cutoffTime)) {
       setIsErrorCutoffTime({
         isError: true,
         message: "Cutoff time invalid!",
       });
-    } else {
-      const jsonBody = {
-        cutoffTime: cutoffTime,
-        dayDifference: Number(dayDifference),
-      };
-      try {
-        setIsLoading(true);
-        let response = await fetch(CUTOFF_TIME_URL, {
-          method: "PATCH",
-          body: JSON.stringify(jsonBody),
-          headers: {
-            "content-type": "application/json",
-          },
-        });
-        if (response.status === 200) {
-          setToastProps({ content: "Save Cutoff time Successfully!" });
-          await getCutOffByDomain();
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.log("Error:", error);
+      return;
+    }
+
+    const jsonBody = {
+      cutoffTime: !cutoffTime ? CUTOFF_TIME_DEFAULT : cutoffTime,
+      dayDifference: !dayDifference
+        ? Number(DAY_DIFFERENCE_DEFAULT)
+        : Number(dayDifference),
+    };
+    try {
+      setIsLoading(true);
+      let response = await fetch(CUTOFF_TIME_URL, {
+        method: "PATCH",
+        body: JSON.stringify(jsonBody),
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+      if (response.status === 200) {
+        setToastProps({ content: "Save Cutoff time Successfully!" });
+        await getCutOffByDomain();
         setIsLoading(false);
-        setToastProps({
-          content: "Some thing went wrong!",
-        });
       }
+    } catch (error) {
+      console.log("Error:", error);
+      setIsLoading(false);
+      setToastProps({
+        content: "Some thing went wrong!",
+      });
     }
   };
 
@@ -114,12 +116,11 @@ const CutOffComponents = () => {
   };
 
   const handleChangeDayDifference = (value) => {
-    if (value > 0) {
+    if (value) {
       setIsErrorCutoffTime(IS_ERROR_DEFAULT);
     }
-    if (value <= 99) {
-      setDayDifference(value);
-    }
+    const numericValue = value.replace(/\D/g, "");
+    setDayDifference(numericValue);
   };
 
   return (
@@ -153,14 +154,13 @@ const CutOffComponents = () => {
           </div>
           <div className="col" style={{ width: "20%" }}>
             <TextField
-              type="number"
+              type="text"
               label="Day difference"
               placeholder="Enter day difference"
               value={dayDifference}
               onChange={handleChangeDayDifference}
               autoComplete="off"
-              min="0"
-              max="99"
+              maxLength="2"
             />
           </div>
           <div
