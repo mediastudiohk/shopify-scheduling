@@ -184,7 +184,7 @@ export const Row = ({
         <Select
           disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
           label="District"
-          placeholder="Select District"
+          placeholder="All Districts"
           options={districtCustom}
           onChange={(value) => {
             setDistrict(value),
