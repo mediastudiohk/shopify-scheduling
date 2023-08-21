@@ -37,7 +37,6 @@ export const styles = {
     minWidth: 150,
     maxWidth: 150,
     backgroundColor: "#ac1b17",
-    maxHeight: 36,
   },
   orderContainerDetail: {
     textAlign: "center",

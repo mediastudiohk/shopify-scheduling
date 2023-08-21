@@ -32,7 +32,7 @@ export const Row = ({
   const [customerType, setCustomerType] = useState("");
   const [maximumOrders, setMaximumOrders] = useState("");
   const [placedOrders, setPlacedOrders] = useState([]);
-  const [districtCustom, setDistrictCustom] = useState([]);
+  const [districtOptions, setDistrictOptions] = useState([]);
   const storeName = "vmo-staging";
 
   const gotoOrder = (id) => {
@@ -53,7 +53,11 @@ export const Row = ({
       setCustomerType(rowData.customer_type),
       setMaximumOrders(rowData.maximum_order),
       rowData?.schedule_orders && setPlacedOrders(rowData?.schedule_orders));
-  }, [allData]);
+    let districtCustomOption = DISTRICT_OPTIONS.find(
+      (item) => item.area === rowData.area
+    );
+    setDistrictOptions(districtCustomOption?.district);
+  }, [rowData]);
 
   const isCompare = useMemo(
     () =>
@@ -66,17 +70,8 @@ export const Row = ({
     let districtCustomOption = DISTRICT_OPTIONS.find(
       (item) => item.area === area
     );
-    setDistrictCustom([...districtCustomOption.district]);
+    setDistrictOptions([...districtCustomOption.district]);
   };
-
-  useEffect(async () => {
-    (async () => {
-      let districtCustomOption = DISTRICT_OPTIONS.find(
-        (item) => item.area === rowData.area
-      );
-      setDistrictCustom(districtCustomOption?.district);
-    })();
-  }, []);
 
   const handleMoveUp = ({ dayIndex, rowIndex, allData }) => {
     let tempNewData = [...allData[dayIndex].data];
@@ -110,6 +105,69 @@ export const Row = ({
     setData(newAlldata);
   };
 
+  const handleChangeComment = (value) => {
+    setComment(value);
+    saveDay(
+      {
+        dayIndex,
+        id_schedule_default: rowData.id_schedule_default || null,
+        schedule_date: rowData.schedule_date,
+        comment: value,
+        customer_type: rowData.customer_type,
+        maximum_order: rowData.maximum_order,
+        is_customed: rowData.is_customed,
+        area,
+        district,
+        priority: rowData.priority,
+      },
+      allData,
+      dayIndex,
+      rowIndex
+    );
+  };
+
+  const handleChangeDistrict = (value) => {
+    setDistrict(value);
+    saveDay(
+      {
+        dayIndex,
+        id_schedule_default: rowData.id_schedule_default,
+        schedule_date: rowData.schedule_date,
+        comment,
+        customer_type: rowData.customer_type,
+        maximum_order: rowData.maximum_order,
+        is_customed: rowData.is_customed,
+        area,
+        district: value,
+        priority: rowData.priority,
+      },
+      allData,
+      dayIndex,
+      rowIndex
+    );
+  };
+
+  const handleChangeCustomerType = (value) => {
+    setCustomerType(value);
+    saveDay(
+      {
+        dayIndex,
+        id_schedule_default: rowData.id_schedule_default,
+        schedule_date: rowData.schedule_date,
+        comment,
+        customer_type: value,
+        maximum_order: rowData.maximum_order,
+        is_customed: rowData.is_customed,
+        area,
+        district,
+        priority: rowData.priority,
+      },
+      allData,
+      dayIndex,
+      rowIndex
+    );
+  };
+
   return (
     <div key={rowData?.id_schedule_default} style={styles.rowContainer}>
       <div style={styles.commentContainer}>
@@ -122,26 +180,7 @@ export const Row = ({
           placeholder="Enter Comment"
           value={comment}
           maxLength="25"
-          onChange={(value) => {
-            setComment(value),
-              saveDay(
-                {
-                  dayIndex,
-                  id_schedule_default: rowData.id_schedule_default || null,
-                  schedule_date: rowData.schedule_date,
-                  comment: value,
-                  customer_type: rowData.customer_type,
-                  maximum_order: rowData.maximum_order,
-                  is_customed: rowData.is_customed,
-                  area,
-                  district,
-                  priority: rowData.priority,
-                },
-                allData,
-                dayIndex,
-                rowIndex
-              );
-          }}
+          onChange={handleChangeComment}
           autoComplete="off"
           labelHidden
         />
@@ -184,28 +223,9 @@ export const Row = ({
         <Select
           disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
           label="District"
-          placeholder="All Districts"
-          options={districtCustom}
-          onChange={(value) => {
-            setDistrict(value),
-              saveDay(
-                {
-                  dayIndex,
-                  id_schedule_default: rowData.id_schedule_default,
-                  schedule_date: rowData.schedule_date,
-                  comment,
-                  customer_type: rowData.customer_type,
-                  maximum_order: rowData.maximum_order,
-                  is_customed: rowData.is_customed,
-                  area,
-                  district: value,
-                  priority: rowData.priority,
-                },
-                allData,
-                dayIndex,
-                rowIndex
-              );
-          }}
+          // placeholder="Select District"
+          options={districtOptions}
+          onChange={handleChangeDistrict}
           value={district}
           labelHidden
         />
@@ -216,26 +236,7 @@ export const Row = ({
           label="Customer Type"
           placeholder="Select Customer Type"
           options={CUSTOMER_TYPE_OPTIONS}
-          onChange={(value) => {
-            setCustomerType(value),
-              saveDay(
-                {
-                  dayIndex,
-                  id_schedule_default: rowData.id_schedule_default,
-                  schedule_date: rowData.schedule_date,
-                  comment,
-                  customer_type: value,
-                  maximum_order: rowData.maximum_order,
-                  is_customed: rowData.is_customed,
-                  area,
-                  district,
-                  priority: rowData.priority,
-                },
-                allData,
-                dayIndex,
-                rowIndex
-              );
-          }}
+          onChange={handleChangeCustomerType}
           value={customerType}
           labelHidden
         />
@@ -302,7 +303,7 @@ export const Row = ({
               backgroundColor: "white",
             }}
           >
-            {placedOrders.length != 0 &&
+            {placedOrders.length > 0 &&
               placedOrders.map((item, index) => {
                 return (
                   <b style={styles.orderContainerDetail} key={index}>
