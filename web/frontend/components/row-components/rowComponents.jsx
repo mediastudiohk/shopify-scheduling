@@ -230,7 +230,7 @@ export const Row = ({
           labelHidden
         />
       </div>
-      <div style={styles.selectContainer}>
+      <div style={styles.selectContainerShort}>
         <Select
           disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
           label="Customer Type"
@@ -241,7 +241,7 @@ export const Row = ({
           labelHidden
         />
       </div>
-      <div style={styles.selectContainer}>
+      <div style={styles.selectContainerShort}>
         <TextField
           error={
             isSavePress
