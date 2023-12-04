@@ -17,7 +17,7 @@ export const styles = {
     gap: 12,
   },
   commentContainer: {
-    width: 130,
+    width: 120,
   },
   commentContainerAlert: {
     border: 1,
@@ -25,21 +25,21 @@ export const styles = {
     width: 200,
   },
   selectContainer: {
-    minWidth: 190,
-    maxWidth: 190,
+    minWidth: 200,
+    maxWidth: 200,
   },
   selectContainerShort: {
-    minWidth: 130,
-    maxWidth: 130,
+    minWidth: 120,
+    maxWidth: 120,
   },
   selectContainerPlaceOrder: {
-    minWidth: 130,
-    maxWidth: 130,
+    minWidth: 120,
+    maxWidth: 120,
     backgroundColor: "#00ff99",
   },
   selectContainerPlaceOrderWarning: {
-    minWidth: 130,
-    maxWidth: 130,
+    minWidth: 120,
+    maxWidth: 120,
     backgroundColor: "#ac1b17",
   },
   orderContainerDetail: {
@@ -72,6 +72,7 @@ export const styles = {
     cursor: "pointer",
     width: 30,
     justifyContent: "center",
+    height: 'fit-content',
   },
   moveActionContainer: { padding: 2 },
   buttonMoveContainer: {
