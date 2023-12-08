@@ -2,6 +2,7 @@
   "name": "shopify-frontend-template-react",
   "private": true,
   "license": "UNLICENSED",
+  "version": "1.0.0",
   "scripts": {
     "build": "vite build",
     "dev": "vite",

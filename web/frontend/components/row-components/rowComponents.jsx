@@ -33,7 +33,7 @@ export const Row = ({
   const [maximumOrders, setMaximumOrders] = useState("");
   const [placedOrders, setPlacedOrders] = useState([]);
   const [districtOptions, setDistrictOptions] = useState([]);
-  const storeName = "vmo-staging";
+  const storeName = "tastemattershk";
 
   const gotoOrder = (id) => {
     if (id) {
