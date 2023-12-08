@@ -1,4 +1,4 @@
-import { DeliveryDefault } from "../components/delivery-schedule-component";
+import { DeliveryDefault } from "../components/deliveryScheduleComponent";
 
 export default function HomePage() {
   return (
