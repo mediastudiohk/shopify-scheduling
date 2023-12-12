@@ -32,7 +32,7 @@ export const Row = ({
   isSavePress,
   orderNotInScheduleOptions = [],
   setIsAssignedOrder,
-  selectedDate
+  selectedDate,
 }) => {
   const [comment, setComment] = useState("");
   const [area, setArea] = useState("");
@@ -230,10 +230,10 @@ export const Row = ({
       const { response, message } = await res.json();
 
       if (response) {
-          setIsLoadingAssignOrder(false);
-          handleCloseModal();
-          setToastProps({ content: "Assign Order successfully!" });
-          setIsAssignedOrder?.(true);
+        setIsLoadingAssignOrder(false);
+        handleCloseModal();
+        setToastProps({ content: "Assign Order successfully!" });
+        setIsAssignedOrder?.(true);
       } else {
         setIsLoadingAssignOrder(false);
         setToastProps({
@@ -389,7 +389,9 @@ export const Row = ({
           <div style={styles.selectContainerShort}>
             <Select
               disabled={
-                isPlacedOrders && placedOrders.length >= maximumOrders
+                isPlacedOrders &&
+                (placedOrders.length >= maximumOrders ||
+                  !orderNotInScheduleOptions.length)
                   ? true
                   : false
               }
