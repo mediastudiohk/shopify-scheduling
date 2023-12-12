@@ -20,3 +20,4 @@ export const TAB_ENUMS = [
 export const DOMAIN = "https://msh.api.vmodev.link";
 export const STORE_NAME = "vmo-staging";
 export const REGEX_CUTOFF_TIME = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+export const EMPTY_CONTENT_TOAST = { content: null };

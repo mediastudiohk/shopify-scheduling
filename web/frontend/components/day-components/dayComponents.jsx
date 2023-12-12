@@ -22,6 +22,8 @@ export const Day = ({
   isPlacedOrders = false,
   isLoading,
   saveDay,
+  orderNotInSchedule = [],
+  setIsAssignedOrder
 }) => {
   const [isSavePress, setIsSavePressed] = useState(false);
   const emptyToastProps = { content: null };
@@ -78,25 +80,27 @@ export const Day = ({
         {isDate && <div>{handleDayInWeek(dayData.date)}</div>}
       </div>
       {dayData.data.length != 0 && (
-        <div style={{ marginLeft: 4, display: "flex", flexDirection: "row", gap: '12px' }}>
-          <b style={styles.commentContainer}>
-            Comment
-          </b>
-          <b style={styles.selectContainer}>
-            Area
-          </b>
-          <b style={styles.selectContainer}>
-            District
-          </b>
-          <b style={styles.selectContainerShort}>
-            Customer Type
-          </b>
+        <div
+          style={{
+            marginLeft: 4,
+            display: "flex",
+            flexDirection: "row",
+            gap: "12px",
+          }}
+        >
+          <b style={styles.commentContainer}>Comment</b>
+          <b style={styles.selectContainer}>Area</b>
+          <b style={styles.selectContainer}>District</b>
+          <b style={styles.selectContainerShort}>Customer Type</b>
 
-          <b style={styles.selectContainerShort}>
-            Maximum Orders
-          </b>
-          {isPlacedOrders && <b style={styles.selectContainerShort}>Placed Orders</b>}
-          <b style={{width: 30}} />
+          <b style={styles.selectContainerShort}>Maximum Orders</b>
+          {isPlacedOrders && (
+            <b style={styles.selectContainerShort}>Placed Orders</b>
+          )}
+          {isPlacedOrders && (
+            <b style={styles.selectContainerShort}>Assign Order</b>
+          )}
+          <b style={{ width: 30 }} />
           <b>Move</b>
         </div>
       )}
@@ -116,6 +120,8 @@ export const Day = ({
             saveDay={saveDay}
             dayData={dayData}
             isSavePress={isSavePress}
+            orderNotInSchedule={orderNotInSchedule}
+            setIsAssignedOrder={setIsAssignedOrder}
           />
         );
       })}

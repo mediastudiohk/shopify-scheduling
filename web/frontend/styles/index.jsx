@@ -149,7 +149,7 @@ export const styles = {
   },
   buttonCalendarContainer: {
     display: "flex",
-    zIndex: 9999,
+    zIndex: 99,
     width: 120,
     backgroundColor: "grey",
     height: 32,

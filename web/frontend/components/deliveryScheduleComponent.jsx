@@ -1,9 +1,5 @@
 import { Layout, Icon, Tabs, Card } from "@shopify/polaris";
-import {
-  TitleBar,
-  useAuthenticatedFetch,
-  Toast,
-} from "@shopify/app-bridge-react";
+import { TitleBar, useAuthenticatedFetch } from "@shopify/app-bridge-react";
 import React, { useEffect, useState, useCallback, forwardRef } from "react";
 import { CalendarMajor } from "@shopify/polaris-icons";
 import DatePicker from "react-datepicker";
@@ -19,8 +15,10 @@ import CutOffComponents from "./cut-off-components/cutOffComponents";
 
 import { comparePriority } from "../utils/comparePriority";
 import { LoadingDot } from "./loading-dot";
-import { DOMAIN, STORE_NAME, TAB_ENUMS } from "../constants/constants";
+import { DOMAIN, TAB_ENUMS } from "../constants/constants";
 import { handleDayInWeek, handleDayInWeekV2 } from "../utils/date-utils";
+import { useToast } from "../hooks/useToast";
+import { gotoOrder } from "../utils";
 
 function useWindowSize() {
   const [windowSize, setWindowSize] = useState({
@@ -47,10 +45,8 @@ function useWindowSize() {
 export const DeliveryDefault = () => {
   const size = useWindowSize();
   const [selected, setSelected] = useState(0);
-  const emptyToastProps = { content: null };
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSelectDate, setIsLoadingSelectDate] = useState(false);
-  const [toastProps, setToastProps] = useState(emptyToastProps);
   const [defaultScheduleData, setDefaultScheduleData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
@@ -62,24 +58,15 @@ export const DeliveryDefault = () => {
   const [lastItemSelectedDate, setLastItemSelectedDate] = useState([]);
   const fetch = useAuthenticatedFetch();
 
+  const [isAssignedOrder, setIsAssignedOrder] = useState(false);
+  const { toastMarkup, setToastProps } = useToast({
+    isLoading,
+  });
+
   const handleTabChange = useCallback(
     (selectedTabIndex) => setSelected(selectedTabIndex),
     []
   );
-
-  const toastMarkup = toastProps.content && !isLoading && (
-    <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
-  );
-
-  const gotoOrder = (id) => {
-    if (id) {
-      let orderId = id.split("gid://shopify/Order/").at(1);
-      let url = `https://admin.shopify.com/store/${STORE_NAME}/orders/`;
-      window.open(url + orderId, "_blank");
-    } else {
-      console.log("id is not defined");
-    }
-  };
 
   const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
     <div style={styles.buttonCalendar} onClick={onClick}>
@@ -186,8 +173,8 @@ export const DeliveryDefault = () => {
     newRowItem["maximum_order"] = Number(item.maximum_order);
     let newDayItem = [...allData[day].data];
     newDayItem.splice(row, 1, newRowItem);
-    let newAlldata = [...allData];
-    setDefaultScheduleData(newAlldata);
+    let newAllData = [...allData];
+    setDefaultScheduleData(newAllData);
   };
 
   const saveDaySelectedDate = (item, allData, day, row) => {
@@ -199,8 +186,8 @@ export const DeliveryDefault = () => {
     newRowItem["maximum_order"] = Number(item.maximum_order);
     let newDayItem = [...allData[day].data];
     newDayItem.splice(row, 1, newRowItem);
-    let newAlldata = [...allData];
-    setSelectedDateData(newAlldata);
+    let newAllData = [...allData];
+    setSelectedDateData(newAllData);
   };
 
   const handleSaveDay = (day, date, data) => {
@@ -324,6 +311,7 @@ export const DeliveryDefault = () => {
       );
       const data = await response.json();
       setOrderNotInSchedule(data.response);
+      setIsAssignedOrder(false);
     } catch (error) {
       console.log("Error:", error);
     }
@@ -589,6 +577,13 @@ export const DeliveryDefault = () => {
     fetchDataDefaultToday(selectedDate);
   }, [selectedDate]);
 
+  useEffect(() => {
+    if (isAssignedOrder) {
+      fetchDataDefaultToday(selectedDate);
+      handleGetOrderWithOutSchedule();
+    }
+  }, [isAssignedOrder]);
+
   return (
     <div style={styles.container}>
       <div
@@ -697,6 +692,12 @@ export const DeliveryDefault = () => {
                                     isPlacedOrders={true}
                                     handleSaveDay={handleSaveDaySelectedDate}
                                     saveDay={saveDaySelectedDate}
+                                    orderNotInSchedule={
+                                      orderNotInSchedule?.map(
+                                        (order) => order?.name
+                                      ) || []
+                                    }
+                                    setIsAssignedOrder={setIsAssignedOrder}
                                   />
                                 );
                               })
