@@ -30,7 +30,7 @@ export const Row = ({
   saveDay,
   dayData,
   isSavePress,
-  orderNotInSchedule = [],
+  orderNotInScheduleOptions = [],
   setIsAssignedOrder,
   selectedDate
 }) => {
@@ -230,12 +230,10 @@ export const Row = ({
       const { response, message } = await res.json();
 
       if (response) {
-        setTimeout(() => {
           setIsLoadingAssignOrder(false);
+          handleCloseModal();
           setToastProps({ content: "Assign Order successfully!" });
           setIsAssignedOrder?.(true);
-          handleCloseModal();
-        }, 3000);
       } else {
         setIsLoadingAssignOrder(false);
         setToastProps({
@@ -397,7 +395,7 @@ export const Row = ({
               }
               label="Assign Order"
               placeholder="Select"
-              options={orderNotInSchedule}
+              options={orderNotInScheduleOptions}
               onChange={(value) => {
                 setAssignOrder(value);
                 handleOpenModal();
