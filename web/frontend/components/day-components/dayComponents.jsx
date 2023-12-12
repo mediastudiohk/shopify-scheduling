@@ -1,5 +1,5 @@
 import { Toast } from "@shopify/app-bridge-react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import "../../css/dot-chasing.css";
 import "../../css/tab-effect.css";
@@ -24,7 +24,7 @@ export const Day = ({
   saveDay,
   orderNotInSchedule = [],
   setIsAssignedOrder,
-  selectedDate
+  selectedDate,
 }) => {
   const [isSavePress, setIsSavePressed] = useState(false);
   const emptyToastProps = { content: null };
@@ -74,6 +74,18 @@ export const Day = ({
     }
   };
   let day = dayIndex;
+
+  const orderNotInScheduleOptions = useMemo(() => {
+    const scheduleOrders = (dayData.data || [])
+      .map((day) => day.schedule_orders)
+      .flat()
+      .map((order) => order.order_name);
+
+    return orderNotInSchedule.filter((order) =>
+      !scheduleOrders.includes(order)
+    );
+  }, [dayData.data]);
+
   return (
     <div key={day}>
       {toastMarkup}
@@ -121,7 +133,7 @@ export const Day = ({
             saveDay={saveDay}
             dayData={dayData}
             isSavePress={isSavePress}
-            orderNotInSchedule={orderNotInSchedule}
+            orderNotInScheduleOptions={orderNotInScheduleOptions}
             setIsAssignedOrder={setIsAssignedOrder}
             selectedDate={selectedDate}
           />

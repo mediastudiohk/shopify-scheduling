@@ -362,7 +362,7 @@ export const DeliveryDefault = () => {
         }
         setIsLoading(false);
         if (currentTemplate.length != 0) {
-          handleGetData(currentTemplate);
+          setDefaultScheduleData(currentTemplate);
           setIsLoading(false);
           setToastProps({ content: "Get Orders Successfully!" });
         }
@@ -560,10 +560,6 @@ export const DeliveryDefault = () => {
       });
       setIsLoading(false);
     }
-  };
-
-  const handleGetData = (data) => {
-    setDefaultScheduleData(data);
   };
 
   useEffect(() => {
