@@ -11,6 +11,11 @@ import "../../css/dot-chasing.css";
 import "../../css/tab-effect.css";
 import "../../css/tab-sample.css";
 import "react-datepicker/dist/react-datepicker.css";
+import { DOMAIN } from "../../constants/constants";
+import { AssignOrderModal } from "../assignOrderModal";
+import { gotoOrder } from "../../utils";
+import { useToast } from "../../hooks/useToast";
+import { format } from "date-fns";
 
 export const Row = ({
   rowData,
@@ -25,6 +30,9 @@ export const Row = ({
   saveDay,
   dayData,
   isSavePress,
+  orderNotInSchedule = [],
+  setIsAssignedOrder,
+  selectedDate
 }) => {
   const [comment, setComment] = useState("");
   const [area, setArea] = useState("");
@@ -33,17 +41,16 @@ export const Row = ({
   const [maximumOrders, setMaximumOrders] = useState("");
   const [placedOrders, setPlacedOrders] = useState([]);
   const [districtOptions, setDistrictOptions] = useState([]);
-  const storeName = "vmo-staging";
+  const [openModal, setOpenModal] = useState(false);
+  const [isLoadingAssignOrder, setIsLoadingAssignOrder] = useState(false);
+  const [assignOrder, setAssignOrder] = useState("");
 
-  const gotoOrder = (id) => {
-    if (id) {
-      let orderId = id.split("gid://shopify/Order/").at(1);
-      let url = `https://admin.shopify.com/store/${storeName}/orders/`;
-      window.open(url + orderId, "_blank");
-    } else {
-      console.log("id is not defined");
-    }
-  };
+  const { toastMarkup, setToastProps } = useToast({
+    isLoading,
+  });
+
+  const handleOpenModal = () => setOpenModal(true);
+  const handleCloseModal = () => setOpenModal(false);
 
   useEffect(() => {
     rowData &&
@@ -168,214 +175,307 @@ export const Row = ({
     );
   };
 
+  const handleChangeArea = (value) => {
+    getDistrictOption(value);
+    setArea(value);
+    setDistrict("");
+    saveDay(
+      {
+        dayIndex,
+        id_schedule_default: rowData.id_schedule_default,
+        schedule_date: rowData.schedule_date,
+        comment,
+        customer_type: rowData.customer_type,
+        maximum_order: rowData.maximum_order,
+        is_customed: rowData.is_customed,
+        area: value,
+        district: "",
+        priority: rowData.priority,
+      },
+      allData,
+      dayIndex,
+      rowIndex
+    );
+  };
+
+  const handleAssignOrder = async () => {
+    try {
+      const { id_schedule, comment, id_schedule_default } = rowData;
+
+      const currentDate = format(new Date(selectedDate), "yyyy-MM-dd");
+      const [year, month, day] = currentDate.split("-");
+      const formattedDate = [day, month, year].join("-");
+
+      let noteContent = `Delivery Date: ${formattedDate}\n`;
+      noteContent += `Delivery Time: ${comment}\n`;
+
+      setIsLoadingAssignOrder(true);
+
+      const payload = {
+        id_schedule_default: id_schedule_default || null,
+        date: currentDate,
+        order_name: assignOrder,
+        id_schedule: id_schedule || null,
+        note: noteContent,
+      };
+
+      const res = await fetch(`${DOMAIN}/api/schedule-order/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const { response, message } = await res.json();
+
+      if (response) {
+        setTimeout(() => {
+          setIsLoadingAssignOrder(false);
+          setToastProps({ content: "Assign Order successfully!" });
+          setIsAssignedOrder?.(true);
+          handleCloseModal();
+        }, 3000);
+      } else {
+        setIsLoadingAssignOrder(false);
+        setToastProps({
+          content: message || "Assign Order failed!",
+          error: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setIsLoadingAssignOrder(false);
+      setToastProps({
+        content: "Assign Order failed!",
+        error: true,
+      });
+    }
+  };
+
   return (
-    <div key={rowData?.id_schedule_default} style={styles.rowContainer}>
-      <div style={styles.commentContainer}>
-        <TextField
-          error={
-            isSavePress ? (comment ? false : "This field is required") : false
-          }
-          disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
-          label="Comment"
-          placeholder="Enter Comment"
-          value={comment}
-          maxLength="25"
-          onChange={handleChangeComment}
-          autoComplete="off"
-          labelHidden
-        />
-      </div>
-      <div style={styles.selectContainer}>
-        <Select
-          error={
-            isSavePress ? (area ? false : "This field is required") : false
-          }
-          disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
-          label="Area"
-          placeholder="Select Area"
-          options={AREA_OPTIONS}
-          onChange={(value) => {
-            getDistrictOption(value);
-            setArea(value),
-              saveDay(
-                {
-                  dayIndex,
-                  id_schedule_default: rowData.id_schedule_default,
-                  schedule_date: rowData.schedule_date,
-                  comment,
-                  customer_type: rowData.customer_type,
-                  maximum_order: rowData.maximum_order,
-                  is_customed: rowData.is_customed,
-                  area: value,
-                  district,
-                  priority: rowData.priority,
-                },
-                allData,
-                dayIndex,
-                rowIndex
-              );
-          }}
-          value={area}
-          labelHidden
-        />
-      </div>
-      <div style={styles.selectContainer}>
-        <Select
-          disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
-          label="District"
-          // placeholder="Select District"
-          options={districtOptions}
-          onChange={handleChangeDistrict}
-          value={district}
-          labelHidden
-        />
-      </div>
-      <div style={styles.selectContainerShort}>
-        <Select
-          disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
-          label="Customer Type"
-          placeholder="Select Customer Type"
-          options={CUSTOMER_TYPE_OPTIONS}
-          onChange={handleChangeCustomerType}
-          value={customerType}
-          labelHidden
-        />
-      </div>
-      <div style={styles.selectContainerShort}>
-        <TextField
-          error={
-            isSavePress
-              ? maximumOrders || maximumOrders !== ""
-                ? false
-                : "This field is required"
-              : false
-          }
-          min={0}
-          max={999}
-          type="number"
-          label="Maximum Orders"
-          value={maximumOrders}
-          onChange={(value) => {
-            let formatValue = value
-              .replace(/[^0-9]/g, "")
-              .replace(/(\...*?)\..*/g, "$1")
-              .replace(/^0[^.]/, "0");
-            formatValue < 0 ||
-            formatValue > 999 ||
-            (value < rowData.schedule_orders?.length && value != "")
-              ? null
-              : (setMaximumOrders(Number(formatValue)),
-                saveDay(
-                  {
-                    dayIndex,
-                    id_schedule_default: rowData.id_schedule_default,
-                    schedule_date: rowData.schedule_date,
-                    comment,
-                    customer_type: rowData.customer_type,
-                    maximum_order: formatValue,
-                    is_customed: rowData.is_customed,
-                    area,
-                    district,
-                    priority: rowData.priority,
-                  },
-                  allData,
-                  dayIndex,
-                  rowIndex
-                ));
-          }}
-          autoComplete="off"
-          labelHidden
-        />
-      </div>
-      {isPlacedOrders && (
-        <div
-          style={
-            isCompare
-              ? styles.selectContainerPlaceOrderWarning
-              : styles.selectContainerPlaceOrder
-          }
-        >
-          <b style={styles.textPlaceOrder}>{placedOrders.length}</b>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              backgroundColor: "white",
-            }}
-          >
-            {placedOrders.length > 0 &&
-              placedOrders.map((item, index) => {
-                return (
-                  <b style={styles.orderContainerDetail} key={index}>
-                    <u
-                      onClick={() => {
-                        gotoOrder(item.order_id);
-                      }}
-                    >
-                      {item.order_name}{" "}
-                    </u>
-                  </b>
-                );
-              })}
-          </div>
-        </div>
-      )}
-      <div style={styles.iconDeleteContainer}>
-        <div
-          onClick={() => {
-            if (isPlacedOrders) {
-              (!rowData?.schedule_orders ||
-                rowData?.schedule_orders?.length === 0) &&
-                !isLoading &&
-                handleDeleteRow(
-                  rowIndex,
-                  dayIndex,
-                  rowData.id_schedule,
-                  allData
-                );
-            } else
-              !isLoading &&
-                handleDeleteRow(
-                  rowIndex,
-                  dayIndex,
-                  rowData.id_schedule_default,
-                  allData
-                );
-          }}
-        >
-          <Icon
-            source={DeleteMajor}
-            color={
-              isPlacedOrders
-                ? !rowData?.schedule_orders ||
-                  rowData?.schedule_orders?.length === 0
-                  ? "black"
-                  : "base"
-                : "black"
+    <>
+      {toastMarkup}
+      <div key={rowData?.id_schedule_default} style={styles.rowContainer}>
+        <div style={styles.commentContainer}>
+          <TextField
+            error={
+              isSavePress ? (comment ? false : "This field is required") : false
             }
+            disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
+            label="Comment"
+            placeholder="Enter Comment"
+            value={comment}
+            maxLength="25"
+            onChange={handleChangeComment}
+            autoComplete="off"
+            labelHidden
           />
         </div>
-      </div>
-      <div>
-        <div style={styles.buttonMoveContainer}>
+        <div style={styles.selectContainer}>
+          <Select
+            error={
+              isSavePress ? (area ? false : "This field is required") : false
+            }
+            disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
+            label="Area"
+            placeholder="Select Area"
+            options={AREA_OPTIONS}
+            onChange={handleChangeArea}
+            value={area}
+            labelHidden
+          />
+        </div>
+        <div style={styles.selectContainer}>
+          <Select
+            disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
+            label="District"
+            // placeholder="Select District"
+            options={districtOptions}
+            onChange={handleChangeDistrict}
+            value={district}
+            labelHidden
+          />
+        </div>
+        <div style={styles.selectContainerShort}>
+          <Select
+            disabled={isPlacedOrders && placedOrders.length != 0 ? true : false}
+            label="Customer Type"
+            placeholder="Select Customer Type"
+            options={CUSTOMER_TYPE_OPTIONS}
+            onChange={handleChangeCustomerType}
+            value={customerType}
+            labelHidden
+          />
+        </div>
+        <div style={styles.selectContainerShort}>
+          <TextField
+            error={
+              isSavePress
+                ? maximumOrders || maximumOrders !== ""
+                  ? false
+                  : "This field is required"
+                : false
+            }
+            min={0}
+            max={999}
+            type="number"
+            label="Maximum Orders"
+            value={maximumOrders}
+            onChange={(value) => {
+              let formatValue = value
+                .replace(/[^0-9]/g, "")
+                .replace(/(\...*?)\..*/g, "$1")
+                .replace(/^0[^.]/, "0");
+              formatValue < 0 ||
+              formatValue > 999 ||
+              (value < rowData.schedule_orders?.length && value != "")
+                ? null
+                : (setMaximumOrders(Number(formatValue)),
+                  saveDay(
+                    {
+                      dayIndex,
+                      id_schedule_default: rowData.id_schedule_default,
+                      schedule_date: rowData.schedule_date,
+                      comment,
+                      customer_type: rowData.customer_type,
+                      maximum_order: formatValue,
+                      is_customed: rowData.is_customed,
+                      area,
+                      district,
+                      priority: rowData.priority,
+                    },
+                    allData,
+                    dayIndex,
+                    rowIndex
+                  ));
+            }}
+            autoComplete="off"
+            labelHidden
+          />
+        </div>
+        {isPlacedOrders && (
           <div
-            style={styles.buttonMoveRowContainer}
-            onClick={() =>
-              handleMoveUp({ dayIndex, rowIndex, rowData, allData })
+            style={
+              isCompare
+                ? styles.selectContainerPlaceOrderWarning
+                : styles.selectContainerPlaceOrder
             }
           >
-            <b>Up</b>
+            <b style={styles.textPlaceOrder}>{placedOrders.length}</b>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                backgroundColor: "white",
+              }}
+            >
+              {placedOrders.length > 0 &&
+                placedOrders.map((item, index) => {
+                  return (
+                    <b style={styles.orderContainerDetail} key={index}>
+                      <u
+                        onClick={() => {
+                          gotoOrder(item.order_id);
+                        }}
+                      >
+                        {item.order_name}{" "}
+                      </u>
+                    </b>
+                  );
+                })}
+            </div>
           </div>
+        )}
+        {isPlacedOrders && (
+          <div style={styles.selectContainerShort}>
+            <Select
+              disabled={
+                isPlacedOrders && placedOrders.length >= maximumOrders
+                  ? true
+                  : false
+              }
+              label="Assign Order"
+              placeholder="Select"
+              options={orderNotInSchedule}
+              onChange={(value) => {
+                setAssignOrder(value);
+                handleOpenModal();
+              }}
+              value={""}
+              labelHidden
+            />
+          </div>
+        )}
+
+        <div style={styles.iconDeleteContainer}>
           <div
-            style={styles.buttonMoveRowContainer}
-            onClick={() =>
-              handleMoveDown({ dayIndex, rowIndex, rowData, allData })
-            }
+            onClick={() => {
+              if (isPlacedOrders) {
+                (!rowData?.schedule_orders ||
+                  rowData?.schedule_orders?.length === 0) &&
+                  !isLoading &&
+                  handleDeleteRow(
+                    rowIndex,
+                    dayIndex,
+                    rowData.id_schedule,
+                    allData
+                  );
+              } else
+                !isLoading &&
+                  handleDeleteRow(
+                    rowIndex,
+                    dayIndex,
+                    rowData.id_schedule_default,
+                    allData
+                  );
+            }}
           >
-            <b>Down</b>
+            <Icon
+              source={DeleteMajor}
+              color={
+                isPlacedOrders
+                  ? !rowData?.schedule_orders ||
+                    rowData?.schedule_orders?.length === 0
+                    ? "black"
+                    : "base"
+                  : "black"
+              }
+            />
+          </div>
+        </div>
+        <div>
+          <div style={styles.buttonMoveContainer}>
+            <div
+              style={styles.buttonMoveRowContainer}
+              onClick={() =>
+                handleMoveUp({ dayIndex, rowIndex, rowData, allData })
+              }
+            >
+              <b>Up</b>
+            </div>
+            <div
+              style={styles.buttonMoveRowContainer}
+              onClick={() =>
+                handleMoveDown({ dayIndex, rowIndex, rowData, allData })
+              }
+            >
+              <b>Down</b>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <AssignOrderModal
+        open={openModal}
+        onClose={handleCloseModal}
+        onConfirm={handleAssignOrder}
+        assignOrder={assignOrder}
+        timeSlot={comment}
+        area={area}
+        district={district}
+        isLoadingAssignOrder={isLoadingAssignOrder}
+      />
+    </>
   );
 };
