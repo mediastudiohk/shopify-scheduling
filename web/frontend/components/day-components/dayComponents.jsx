@@ -7,6 +7,7 @@ import "../../css/tab-sample.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { Row } from "../row-components/rowComponents";
 import { styles } from "../../styles";
+import { useToast } from "../../hooks/useToast";
 
 export const Day = ({
   dayData,
@@ -27,11 +28,10 @@ export const Day = ({
   selectedDate,
 }) => {
   const [isSavePress, setIsSavePressed] = useState(false);
-  const emptyToastProps = { content: null };
-  const [toastProps, setToastProps] = useState(emptyToastProps);
-  const toastMarkup = toastProps.content && !isLoading && (
-    <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
-  );
+  const { toastMarkup } = useToast({
+    isLoading,
+  });
+
   const handleDayInWeek = (date) => {
     switch (date) {
       case "Sun":
@@ -77,12 +77,13 @@ export const Day = ({
 
   const orderNotInScheduleOptions = useMemo(() => {
     const scheduleOrders = (dayData.data || [])
-      .map((day) => day.schedule_orders)
-      .flat()
-      .map((order) => order.order_name);
+      .map((day) => day?.schedule_orders)
+      .flat();
 
-    return orderNotInSchedule.filter((order) =>
-      !scheduleOrders.includes(order)
+    const orders = scheduleOrders.map((order) => order?.order_name);
+
+    return orderNotInSchedule.filter(
+      (order) => !orders.includes(order)
     );
   }, [dayData.data]);
 
