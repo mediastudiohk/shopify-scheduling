@@ -1,13 +1,12 @@
-import { Toast } from "@shopify/app-bridge-react";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 
+import "react-datepicker/dist/react-datepicker.css";
 import "../../css/dot-chasing.css";
 import "../../css/tab-effect.css";
 import "../../css/tab-sample.css";
-import "react-datepicker/dist/react-datepicker.css";
-import { Row } from "../row-components/rowComponents";
-import { styles } from "../../styles";
 import { useToast } from "../../hooks/useToast";
+import { styles } from "../../styles";
+import { Row } from "../row-components/rowComponents";
 
 export const Day = ({
   dayData,
@@ -23,7 +22,7 @@ export const Day = ({
   isPlacedOrders = false,
   isLoading,
   saveDay,
-  orderNotInSchedule = [],
+  orderNotInScheduleOptions = [],
   setIsAssignedOrder,
   selectedDate,
 }) => {
@@ -32,24 +31,15 @@ export const Day = ({
     isLoading,
   });
 
-  const handleDayInWeek = (date) => {
-    switch (date) {
-      case "Sun":
-        return "Sunday";
-      case "Mon":
-        return "Monday";
-      case "Tue":
-        return "Tuesday";
-      case "Wed":
-        return "Wednesday";
-      case "Thu":
-        return "Thursday";
-      case "Fri":
-        return "Friday";
-      case "Sat":
-        return "Saturday";
-    }
-  };
+  const dayInWeek = {
+    "Sun": "Sunday",
+    "Mon": "Monday",
+    "Tue": "Tuesday",
+    "Wed": "Wednesday",
+    "Thu": "Thursday",
+    "Fri": "Friday",
+    "Sat": "Saturday",
+  }
 
   const handleCheckValidate = () => {
     let nullItem = dayData.data.find(
@@ -75,23 +65,11 @@ export const Day = ({
   };
   let day = dayIndex;
 
-  const orderNotInScheduleOptions = useMemo(() => {
-    const scheduleOrders = (dayData.data || [])
-      .map((day) => day?.schedule_orders)
-      .flat();
-
-    const orders = scheduleOrders.map((order) => order?.order_name);
-
-    return orderNotInSchedule.filter(
-      (order) => !orders.includes(order)
-    );
-  }, [dayData.data]);
-
   return (
     <div key={day}>
       {toastMarkup}
       <div style={styles.textDateStyle}>
-        {isDate && <div>{handleDayInWeek(dayData.date)}</div>}
+        {isDate && <div>{dayInWeek[dayData.date]}</div>}
       </div>
       {dayData.data.length != 0 && (
         <div

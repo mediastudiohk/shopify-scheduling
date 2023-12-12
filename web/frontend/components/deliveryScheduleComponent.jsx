@@ -1,6 +1,12 @@
 import { Layout, Icon, Tabs, Card } from "@shopify/polaris";
 import { TitleBar, useAuthenticatedFetch } from "@shopify/app-bridge-react";
-import React, { useEffect, useState, useCallback, forwardRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  forwardRef,
+  useMemo,
+} from "react";
 import { CalendarMajor } from "@shopify/polaris-icons";
 import DatePicker from "react-datepicker";
 import { styles } from "../styles";
@@ -310,7 +316,7 @@ export const DeliveryDefault = () => {
         `${DOMAIN}/api/schedule-order/order-without-schedule`
       );
       const data = await response.json();
-      setOrderNotInSchedule(data.response);
+      setOrderNotInSchedule(data.response || []);
       setIsAssignedOrder(false);
     } catch (error) {
       console.log("Error:", error);
@@ -580,6 +586,20 @@ export const DeliveryDefault = () => {
     }
   }, [isAssignedOrder]);
 
+  const orderNotInScheduleOptions = useMemo(() => {
+    if (!selectedDateData.length) return [];
+
+    const { data } = selectedDateData[0];
+
+    const scheduleOrders = (data || [])
+      .map((day) => day?.schedule_orders)
+      .flat();
+
+    const orders = scheduleOrders.map((order) => order?.order_name);
+
+    return orderNotInSchedule.filter((order) => !orders.includes(order.name));
+  }, [selectedDateData]);
+
   return (
     <div style={styles.container}>
       <div
@@ -688,8 +708,8 @@ export const DeliveryDefault = () => {
                                     isPlacedOrders={true}
                                     handleSaveDay={handleSaveDaySelectedDate}
                                     saveDay={saveDaySelectedDate}
-                                    orderNotInSchedule={
-                                      orderNotInSchedule?.map(
+                                    orderNotInScheduleOptions={
+                                      orderNotInScheduleOptions?.map(
                                         (order) => order?.name
                                       ) || []
                                     }
@@ -709,7 +729,7 @@ export const DeliveryDefault = () => {
                           slots.
                         </b>
                         <div style={styles.itemNotInSchedule}>
-                          {orderNotInSchedule.map((item, index) => {
+                          {orderNotInScheduleOptions.map((item, index) => {
                             return (
                               <b
                                 style={styles.futureDateContainerDetail}
