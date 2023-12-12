@@ -23,7 +23,8 @@ export const Day = ({
   isLoading,
   saveDay,
   orderNotInSchedule = [],
-  setIsAssignedOrder
+  setIsAssignedOrder,
+  selectedDate
 }) => {
   const [isSavePress, setIsSavePressed] = useState(false);
   const emptyToastProps = { content: null };
@@ -122,6 +123,7 @@ export const Day = ({
             isSavePress={isSavePress}
             orderNotInSchedule={orderNotInSchedule}
             setIsAssignedOrder={setIsAssignedOrder}
+            selectedDate={selectedDate}
           />
         );
       })}
