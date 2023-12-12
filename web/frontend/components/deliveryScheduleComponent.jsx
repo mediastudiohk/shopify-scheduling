@@ -698,6 +698,7 @@ export const DeliveryDefault = () => {
                                       ) || []
                                     }
                                     setIsAssignedOrder={setIsAssignedOrder}
+                                    selectedDate={selectedDate}
                                   />
                                 );
                               })
