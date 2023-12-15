@@ -598,7 +598,7 @@ export const DeliveryDefault = () => {
     const orders = scheduleOrders.map((order) => order?.order_name);
 
     return orderNotInSchedule.filter((order) => !orders.includes(order.name));
-  }, [selectedDateData]);
+  }, [selectedDateData, orderNotInSchedule]);
 
   return (
     <div style={styles.container}>
