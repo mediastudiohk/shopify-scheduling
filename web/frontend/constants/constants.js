@@ -20,3 +20,4 @@ export const TAB_ENUMS = [
 export const DOMAIN = "https://service-tm.mediastudio.space";
 export const STORE_NAME = "tastemattershk";
 export const REGEX_CUTOFF_TIME = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+export const EMPTY_CONTENT_TOAST = { content: null };

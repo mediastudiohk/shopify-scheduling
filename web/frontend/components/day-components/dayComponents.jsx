@@ -1,12 +1,12 @@
-import { Toast } from "@shopify/app-bridge-react";
 import React, { useState } from "react";
 
+import "react-datepicker/dist/react-datepicker.css";
 import "../../css/dot-chasing.css";
 import "../../css/tab-effect.css";
 import "../../css/tab-sample.css";
-import "react-datepicker/dist/react-datepicker.css";
-import { Row } from "../row-components/rowComponents";
+import { useToast } from "../../hooks/useToast";
 import { styles } from "../../styles";
+import { Row } from "../row-components/rowComponents";
 
 export const Day = ({
   dayData,
@@ -22,31 +22,24 @@ export const Day = ({
   isPlacedOrders = false,
   isLoading,
   saveDay,
+  orderNotInScheduleOptions = [],
+  setIsAssignedOrder,
+  selectedDate,
 }) => {
   const [isSavePress, setIsSavePressed] = useState(false);
-  const emptyToastProps = { content: null };
-  const [toastProps, setToastProps] = useState(emptyToastProps);
-  const toastMarkup = toastProps.content && !isLoading && (
-    <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
-  );
-  const handleDayInWeek = (date) => {
-    switch (date) {
-      case "Sun":
-        return "Sunday";
-      case "Mon":
-        return "Monday";
-      case "Tue":
-        return "Tuesday";
-      case "Wed":
-        return "Wednesday";
-      case "Thu":
-        return "Thursday";
-      case "Fri":
-        return "Friday";
-      case "Sat":
-        return "Saturday";
-    }
-  };
+  const { toastMarkup } = useToast({
+    isLoading,
+  });
+
+  const dayInWeek = {
+    "Sun": "Sunday",
+    "Mon": "Monday",
+    "Tue": "Tuesday",
+    "Wed": "Wednesday",
+    "Thu": "Thursday",
+    "Fri": "Friday",
+    "Sat": "Saturday",
+  }
 
   const handleCheckValidate = () => {
     let nullItem = dayData.data.find(
@@ -71,32 +64,35 @@ export const Day = ({
     }
   };
   let day = dayIndex;
+
   return (
     <div key={day}>
       {toastMarkup}
       <div style={styles.textDateStyle}>
-        {isDate && <div>{handleDayInWeek(dayData.date)}</div>}
+        {isDate && <div>{dayInWeek[dayData.date]}</div>}
       </div>
       {dayData.data.length != 0 && (
-        <div style={{ marginLeft: 4, display: "flex", flexDirection: "row", gap: '12px' }}>
-          <b style={styles.commentContainer}>
-            Comment
-          </b>
-          <b style={styles.selectContainer}>
-            Area
-          </b>
-          <b style={styles.selectContainer}>
-            District
-          </b>
-          <b style={styles.selectContainerShort}>
-            Customer Type
-          </b>
+        <div
+          style={{
+            marginLeft: 4,
+            display: "flex",
+            flexDirection: "row",
+            gap: "12px",
+          }}
+        >
+          <b style={styles.commentContainer}>Comment</b>
+          <b style={styles.selectContainer}>Area</b>
+          <b style={styles.selectContainer}>District</b>
+          <b style={styles.selectContainerShort}>Customer Type</b>
 
-          <b style={styles.selectContainerShort}>
-            Maximum Orders
-          </b>
-          {isPlacedOrders && <b style={styles.selectContainerShort}>Placed Orders</b>}
-          <b style={{width: 30}} />
+          <b style={styles.selectContainerShort}>Maximum Orders</b>
+          {isPlacedOrders && (
+            <b style={styles.selectContainerShort}>Placed Orders</b>
+          )}
+          {isPlacedOrders && (
+            <b style={styles.selectContainerShort}>Assign Order</b>
+          )}
+          <b style={{ width: 30 }} />
           <b>Move</b>
         </div>
       )}
@@ -116,6 +112,9 @@ export const Day = ({
             saveDay={saveDay}
             dayData={dayData}
             isSavePress={isSavePress}
+            orderNotInScheduleOptions={orderNotInScheduleOptions}
+            setIsAssignedOrder={setIsAssignedOrder}
+            selectedDate={selectedDate}
           />
         );
       })}
